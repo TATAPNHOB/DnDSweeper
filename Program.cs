@@ -98,7 +98,10 @@ namespace DnDSweeper
                     throw new ArgumentException("Unspecified state.");
             }
         }
+    }
 
+    internal static class DndConsoleUtil
+    {
         /// <summary>
         /// "Clear" console doesn't really clear it, but adds multiple line breaks to simulate it.
         /// </summary>
@@ -106,7 +109,13 @@ namespace DnDSweeper
         {
             Console.WriteLine("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         }
-        public static void DetermineVariable(string prompt, out int value, int constant)
+        /// <summary>
+        /// Picking a positive integer value for a game. Checks for bad input.
+        /// </summary>
+        /// <param name="prompt">Variable prompt.</param>
+        /// <param name="value">Out variable.</param>
+        /// <param name="default_value">Default value when input is empty.</param>
+        public static void PickPositiveValue(string prompt, out int value, int default_value)
         {
             while (true)
             {
@@ -119,7 +128,7 @@ namespace DnDSweeper
                 }
                 else
                 {
-                    if (String.IsNullOrEmpty(t)) { value = constant; break; }
+                    if (String.IsNullOrEmpty(t)) { value = default_value; break; }
                     Console.WriteLine("Bad input.");
                 }
             }
@@ -138,6 +147,11 @@ namespace DnDSweeper
         public const string WIDTH_PROMPT = "Enter the dungeon width: ";
         public const string HEIGHT_PROMPT = "Enter the dungeon height: ";
         public const string BOMBS_PROMPT = "Enter the amount of bombs: ";
+    }
+
+    internal abstract class DndObject
+    {
+        // delegate on aquiring, cell visibility, etc for next update
     }
 
     /// <summary>
@@ -438,8 +452,26 @@ namespace DnDSweeper
         void ChangeGameState(GAME_STATE game_state, string message)
         {
             this.game_state = game_state;
-            DndUtil.ClearConsole();
+            DndConsoleUtil.ClearConsole();
             Console.WriteLine(message);
+        }
+
+        public void Play()
+        {
+            while (IsGameRunning)
+            {
+                DndConsoleUtil.ClearConsole();
+                Console.WriteLine(this);
+                Console.WriteLine($"There are {GetNeighborNumber()} bomb(-s) around the player.");
+                if (HasCompass) Console.WriteLine($"Distance to exit: {GetClosestDistance()}"); else Console.WriteLine();
+                Console.WriteLine();
+
+                Move(Console.ReadKey().Key);
+            }
+            Console.WriteLine(this);
+            Console.WriteLine("Press any button to exit the game.");
+            Console.WriteLine();
+            Console.ReadKey();
         }
 
     }
@@ -457,26 +489,13 @@ namespace DnDSweeper
 
             Console.WriteLine("*DND*SWEEPER");
 
-            DndUtil.DetermineVariable(DndConstants.WIDTH_PROMPT, out width, DndConstants.WIDTH);
-            DndUtil.DetermineVariable(DndConstants.HEIGHT_PROMPT, out height, DndConstants.HEIGHT);
-            DndUtil.DetermineVariable(DndConstants.BOMBS_PROMPT, out bombs, DndConstants.BOMBS);
+            DndConsoleUtil.PickPositiveValue(DndConstants.WIDTH_PROMPT, out width, DndConstants.WIDTH);
+            DndConsoleUtil.PickPositiveValue(DndConstants.HEIGHT_PROMPT, out height, DndConstants.HEIGHT);
+            DndConsoleUtil.PickPositiveValue(DndConstants.BOMBS_PROMPT, out bombs, DndConstants.BOMBS);
 
             board = new DndBoard(width, height, bombs);
 
-            while (board.IsGameRunning)
-            {
-                DndUtil.ClearConsole();
-                Console.WriteLine(board);
-                Console.WriteLine($"There are {board.GetNeighborNumber()} bomb(-s) around the player.");
-                if (board.HasCompass) Console.WriteLine($"Distance to exit: {board.GetClosestDistance()}"); else Console.WriteLine();
-                Console.WriteLine();
-
-                board.Move(Console.ReadKey().Key);
-            }
-            Console.WriteLine(board);
-            Console.WriteLine("Press any button to exit the game.");
-            Console.WriteLine();
-            Console.ReadKey();
+            board.Play();
         }
     }
 }
