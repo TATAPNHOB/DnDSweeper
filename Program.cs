@@ -46,6 +46,9 @@ namespace DnDSweeper
         }
     }
 
+    /// <summary>
+    /// Enum for defining a DnD cell state.
+    /// </summary>
     enum CELL_STATE
     {
         PLAYER,
@@ -57,6 +60,9 @@ namespace DnDSweeper
         EMPTY
     }
 
+    /// <summary>
+    /// Enum for defining a game state.
+    /// </summary>
     enum GAME_STATE
     {
         RUNNING,
@@ -152,6 +158,10 @@ namespace DnDSweeper
     internal abstract class DndObject
     {
         // delegate on aquiring, cell visibility, etc for next update
+        Action? doOnAquiring;
+
+        bool visible; 
+
     }
 
     /// <summary>
@@ -420,7 +430,7 @@ namespace DnDSweeper
 
         public override string ToString()
         {
-            string output = "";
+            string output = "- DnD*SWEEPER ---" + "\n";
             for (int i = 0; i < board.GetLength(0); i++)
             {
                 for (int j = 0; j < board.GetLength(1); j++)
@@ -456,23 +466,36 @@ namespace DnDSweeper
             Console.WriteLine(message);
         }
 
+        /// <summary>
+        /// Gameplay loop.
+        /// </summary>
         public void Play()
         {
+            //while state is running...
             while (IsGameRunning)
             {
                 DndConsoleUtil.ClearConsole();
                 Console.WriteLine(this);
                 Console.WriteLine($"There are {GetNeighborNumber()} bomb(-s) around the player.");
+                
+                //needs rewriting for multiple objects
                 if (HasCompass) Console.WriteLine($"Distance to exit: {GetClosestDistance()}"); else Console.WriteLine();
-                Console.WriteLine();
-
-                Move(Console.ReadKey().Key);
+                //needs rewriting so it'll disappear after the first move
+                Console.WriteLine("You now can move with WASD or arrow buttons.");
+                bool moved = false;
+                while (!moved)
+                    try
+                    { Move(Console.ReadKey().Key); moved = true; }
+                    catch (Exception e)
+                    { Console.WriteLine("\n" + e.Message); }
             }
-            Console.WriteLine(this);
-            Console.WriteLine("Press any button to exit the game.");
-            Console.WriteLine();
-            Console.ReadKey();
-        }
+                //print the board
+                Console.WriteLine(this);
+                Console.WriteLine();
+                Console.WriteLine();
+                Console.WriteLine("Press any button to exit the game.");
+                Console.ReadKey();
+                }
 
     }
 
@@ -486,8 +509,16 @@ namespace DnDSweeper
             int width;
             int height;
             int bombs;
-
-            Console.WriteLine("*DND*SWEEPER");
+            Console.WriteLine(@"
+   ██████╗ ███╗   ██╗██████╗       ███████╗██╗    ██╗███████╗███████╗██████╗ ███████╗██████╗ 
+   ██╔══██╗████╗  ██║██╔══██╗▄ ██╗▄██╔════╝██║    ██║██╔════╝██╔════╝██╔══██╗██╔════╝██╔══██╗
+   ██║  ██║██╔██╗ ██║██║  ██║ ████╗███████╗██║ █╗ ██║█████╗  █████╗  ██████╔╝█████╗  ██████╔╝
+   ██║  ██║██║╚██╗██║██║  ██║▀╚██╔▀╚════██║██║███╗██║██╔══╝  ██╔══╝  ██╔═══╝ ██╔══╝  ██╔══██╗
+   ██████╔╝██║ ╚████║██████╔╝  ╚═╝ ███████║╚███╔███╔╝███████╗███████╗██║     ███████╗██║  ██║
+   ╚═════╝ ╚═╝  ╚═══╝╚═════╝       ╚══════╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝     ╚══════╝╚═╝  ╚═╝");
+            Console.WriteLine("v0.1 alpha");
+            Console.WriteLine("Classic Minesweeper with a 'fog of war' twist.");
+            Console.WriteLine();
 
             DndConsoleUtil.PickPositiveValue(DndConstants.WIDTH_PROMPT, out width, DndConstants.WIDTH);
             DndConsoleUtil.PickPositiveValue(DndConstants.HEIGHT_PROMPT, out height, DndConstants.HEIGHT);
