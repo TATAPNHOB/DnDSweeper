@@ -516,17 +516,23 @@ namespace DnDSweeper
    ██║  ██║██║╚██╗██║██║  ██║▀╚██╔▀╚════██║██║███╗██║██╔══╝  ██╔══╝  ██╔═══╝ ██╔══╝  ██╔══██╗
    ██████╔╝██║ ╚████║██████╔╝  ╚═╝ ███████║╚███╔███╔╝███████╗███████╗██║     ███████╗██║  ██║
    ╚═════╝ ╚═╝  ╚═══╝╚═════╝       ╚══════╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝     ╚══════╝╚═╝  ╚═╝");
-            Console.WriteLine("v0.1 alpha");
+            Console.WriteLine("v1");
             Console.WriteLine("Classic Minesweeper with a 'fog of war' twist.");
             Console.WriteLine();
 
             DndConsoleUtil.PickPositiveValue(DndConstants.WIDTH_PROMPT, out width, DndConstants.WIDTH);
             DndConsoleUtil.PickPositiveValue(DndConstants.HEIGHT_PROMPT, out height, DndConstants.HEIGHT);
             DndConsoleUtil.PickPositiveValue(DndConstants.BOMBS_PROMPT, out bombs, DndConstants.BOMBS);
-
-            board = new DndBoard(width, height, bombs);
-
-            board.Play();
+            try
+            {
+                board = new DndBoard(width, height, bombs);
+                board.Play();
+            }
+            catch (Exception e) {
+                Console.WriteLine("The board was not created. Reason: " + e.Message);
+                Console.WriteLine("Shutting down now. Press any key to release.");
+                Console.ReadKey();
+            }
         }
     }
 }
